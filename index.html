@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -49,8 +48,8 @@
   <p>選擇排序法：</p>
   <select id="sort-method">
     <option value="bubble">冒泡排序</option>
-    <option value="selection">選擇排序</option>
-    <option value="insertion">插入排序</option>
+    <option value="selection">選擇排序（模擬步驟）</option>
+    <option value="insertion">插入排序（模擬步驟）</option>
   </select>
   <button onclick="startGame()">開始遊戲</button>
 
@@ -63,6 +62,7 @@
     let method = 'bubble';
     let step = 0;
     let selectedIndices = [];
+    let currentIndex = 0; // 用於選擇與插入排序模擬
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -77,6 +77,7 @@
       method = document.getElementById('sort-method').value;
       step = 0;
       selectedIndices = [];
+      currentIndex = 0;
       log(`選擇了 ${method} 排序，請開始交換兩個數字直到排好。`);
       render();
     }
@@ -115,8 +116,48 @@
         return;
       }
       const [i, j] = selectedIndices;
-      [stones[i], stones[j]] = [stones[j], stones[i]];
-      log(`🔁 已交換 ${stones[j]} 和 ${stones[i]}`);
+      if (Math.abs(i - j) !== 1) {
+        log('⚠️ 只能交換相鄰的魔法石。');
+        return;
+      }
+
+      if (method === 'bubble') {
+        if (stones[i] > stones[j]) {
+          [stones[i], stones[j]] = [stones[j], stones[i]];
+          log(`🔁 冒泡排序交換了 ${stones[j]} 和 ${stones[i]}`);
+        } else {
+          log('✅ 冒泡排序這一對已經順序正確，不需交換。');
+        }
+      } else if (method === 'selection') {
+        if (i !== currentIndex && j !== currentIndex) {
+          log(`⚠️ 選擇排序：請從第 ${currentIndex} 位起選擇交換最小值。`);
+          return;
+        }
+        const other = i === currentIndex ? j : i;
+        if (stones[other] < stones[currentIndex]) {
+          [stones[currentIndex], stones[other]] = [stones[other], stones[currentIndex]];
+          log(`🔁 選擇排序交換了 ${stones[other]} 和 ${stones[currentIndex]}`);
+        } else {
+          log(`✅ 選擇排序目前已是最小，不需交換。`);
+        }
+        currentIndex++;
+      } else if (method === 'insertion') {
+        if (i !== currentIndex && j !== currentIndex) {
+          log(`⚠️ 插入排序：只能移動第 ${currentIndex} 個數字與前面相鄰的交換。`);
+          return;
+        }
+        const other = i === currentIndex ? j : i;
+        if (stones[currentIndex] < stones[other]) {
+          log('✅ 插入排序順序正確，不需交換。');
+        } else {
+          [stones[currentIndex], stones[other]] = [stones[other], stones[currentIndex]];
+          log(`🔁 插入排序交換了 ${stones[other]} 和 ${stones[currentIndex]}`);
+          currentIndex--;
+          if (currentIndex < 1) currentIndex = step + 1;
+        }
+        if (currentIndex >= stones.length) currentIndex = step + 1;
+      }
+
       selectedIndices = [];
       render();
       step++;
